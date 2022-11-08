@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 header {
@@ -24,4 +25,46 @@ header {
 
 main {
   width: 80%;
+  margin-top: 50px;
+}
+
+.errorContainer {
+  width: 100%;
+}
+
+.errorFigure {
+  max-width: 100%;
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), white);
+  padding: 40px;
+  text-align: center;
+}
+
+.errorFigure img {
+  width: 100%;
+}
+
+.errorFigure figcaption {
+  width: 100%;
+  color: red;
+  margin-top: 50px;
+  font-size: 40px;
+}
+
+.counterContainer {
+  display: flex;
+  font-size: 40px;
+  justify-content: space-around;
+}
+
+.counterContainer button {
+  background-color: red;
+  border: none;
+  border-radius: 20px;
+  padding: 0 45px 0 45px;
+  font-size: 30px;
+}
+
+.counterContainer button:hover {
+  background-color: black;
+  color: red;
 }
