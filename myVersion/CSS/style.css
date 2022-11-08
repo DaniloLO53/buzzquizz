@@ -68,3 +68,45 @@ main {
   background-color: black;
   color: red;
 }
+
+.allQuizzes {
+  width: 100%;
+}
+
+.allQuizzesContainer {
+  background-color: red;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 33fr 33fr 33fr;
+  row-gap: 20px;
+  column-gap: 15px;
+}
+
+.allQuizzesContainerWrapper {
+  background-color: green;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.allQuizzesContainer div {
+  width: 420px;
+  height: 280px;
+}
+
+.allQuizzesContainer div figure {
+  width: 100%;
+  position: relative;
+}
+
+.allQuizzesContainer div figure img {
+  width: 100%;
+}
+
+.allQuizzesContainer div figure figcaption {
+  color: white;
+  font-weight: 600;
+  position: absolute;
+  bottom: 20px;
+  left: 25px;
+}

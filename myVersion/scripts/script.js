@@ -1,4 +1,5 @@
 const main = document.querySelector('main');
+const allQuizzesContainer = document.querySelector('.allQuizzesContainer');
 
 function reloadToInitialScreen() {
   const container = document.querySelector('.errorContainer');
@@ -65,7 +66,7 @@ function errorHandle(error) {
 };
 
 async function requestQuizzes() {
-  const END_POINT = 'https://mock-api.driven.com.br/api/v4/buzzquizz/quizzs';
+  const END_POINT = 'https://mock-api.driven.com.br/api/v4/buzzquizz/quizzes';
 
   try {
     const promisse = await axios.get(END_POINT);
@@ -76,9 +77,34 @@ async function requestQuizzes() {
   }
 };
 
+function buildQuiz(quiz) {
+  const { id, title, image, levels, questions } = quiz;
+
+  const quizzCard = document.createElement('div');
+  const figure = document.createElement('figure');
+  const img = document.createElement('img');
+  const caption = document.createElement('figcaption');
+
+  quizzCard.classList.add('quizzCard');
+
+  img.src = image;
+  caption.innerHTML = title;
+
+  quizzCard.append(figure);
+  figure.append(img);
+  figure.append(caption);
+
+  return quizzCard;
+};
+
 async function buildQuizzes() {
   const quizzesData = await requestQuizzes();
-  console.log(quizzesData);
+
+  const { data } = quizzesData;
+  const quizzes = data.map((quiz) => buildQuiz(quiz));
+
+  quizzes.forEach((quiz) => allQuizzesContainer.append(quiz));
+  console.log(quizzes);
 };
 
 window.addEventListener('load', buildQuizzes);
