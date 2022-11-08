@@ -146,3 +146,71 @@ main {
   /* background-color: red; */
   margin-bottom: 40px;
 }
+
+.startQuizzContainer {
+  /* background-color: green; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.startQuizzContainer form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* background-color: purple; */
+  width: 50%;
+  padding: 15px;
+}
+
+.startQuizzContainer form label {
+  /* background-color: red; */
+  margin: 10px;
+  width: 100%;
+  height: 45px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.startQuizzContainer form label input {
+  width: calc(100% - 15px);
+  height: 100%;
+  padding-left: 15px;
+  border: 1px solid gray;
+  border-radius: 8px;
+}
+
+.startQuizzContainer form label input:invalid {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.startQuizzContainer button {
+  background-color: red;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  padding: 15px 30px 15px 30px;
+  margin-top: 50px;
+  font-size: 22px;
+}
+
+.startQuizzContainer button:disabled {
+  opacity: 0.3;
+}
+
+.startQuizzContainer button:disabled:hover {
+  background-color: red;
+}
+
+.startQuizzContainer button:hover {
+  background-color: green;
+}
+
+.invalidText {
+  /* background-color: red; */
+  position: absolute;
+  width: 180px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(100% + 15px);
+}
