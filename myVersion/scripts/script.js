@@ -1,5 +1,6 @@
 const main = document.querySelector('main');
 const allQuizzesContainer = document.querySelector('.allQuizzesContainer');
+const myQuizzes = document.querySelector('.myQuizzes');
 
 function reloadToInitialScreen() {
   const container = document.querySelector('.errorContainer');
@@ -63,6 +64,7 @@ function errorHandle(error) {
   }
 
   reloadToInitialScreen();
+  throw new Error(error.message);
 };
 
 async function requestQuizzes() {
@@ -73,7 +75,6 @@ async function requestQuizzes() {
     return promisse;
   } catch (error) {
     errorHandle(error);
-    throw new Error(error.message);
   }
 };
 
@@ -107,4 +108,28 @@ async function buildQuizzes() {
   console.log(quizzes);
 };
 
+function buildNoQuizzes() {
+  const noQuizzesContainer = document.createElement('div');
+  const noQuizzesText = document.createElement('p');
+  const createQuizzButton = document.createElement('button');
+
+  noQuizzesContainer.classList.add('noQuizzesContainer');
+
+  noQuizzesText.innerHTML = 'Você não criou nenhum quizz ainda :('
+  createQuizzButton.innerHTML = 'Criar Quizz';
+
+  myQuizzes.append(noQuizzesContainer);
+  noQuizzesContainer.append(noQuizzesText);
+  noQuizzesContainer.append(createQuizzButton);
+};
+
+function buildMyQuizzes() {
+  const myQuizzesIds = JSON.parse(localStorage.getItem('myQuizzesIds')) || [];
+
+  if (myQuizzesIds.length === 0) {
+    buildNoQuizzes();
+  }
+};
+
 window.addEventListener('load', buildQuizzes);
+window.addEventListener('load', buildMyQuizzes);
