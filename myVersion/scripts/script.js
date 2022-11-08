@@ -31,6 +31,8 @@ const quiz = {
       min: 2
     }
   ],
+
+  questions: [],
 }
 
 function reloadToInitialScreen() {
@@ -167,7 +169,7 @@ function renderGeneralQuiz(event) {
     ? 'Comece pelo começo'
     : 'Prosseguir pra criar perguntas'
       ? 'Crie suas perguntas'
-      : 'Agora, decidaq os níveis!';
+      : 'Agora, decida os níveis!';
   button.innerHTML = text === 'Criar Quizz'
     ? 'Prosseguir pra criar perguntas'
     : 'Prosseguir pra criar perguntas'
@@ -177,6 +179,8 @@ function renderGeneralQuiz(event) {
   startQuizzContainer.classList.add('startQuizzContainer');
   button.classList.add('startQuizzContainerButton');
 
+  if (text === 'Criar Quizz') form.classList.add('formStyle');
+
   main.append(startQuizzContainer);
   startQuizzContainer.append(title);
   startQuizzContainer.append(form);
@@ -185,28 +189,160 @@ function renderGeneralQuiz(event) {
   return [form, button];
 };
 
+function buildInitialForm(parent) {
+  for (let index = 0; index < 4; index += 1) {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+
+    input.addEventListener('change', validateInitialQuizzInfo)
+
+    input.placeholder = quiz.initial[index].placeholder;
+    input.name = quiz.initial[index].name;
+    input.type = quiz.initial[index].type;
+    if (input.type === 'number') input.min = quiz.initial[index].min;
+    if (input.name === 'title') {
+      input.setAttribute('minlength', quiz.initial[index].minlength);
+      input.setAttribute('maxlength', quiz.initial[index].maxlength);
+    };
+
+    label.append(input);
+    parent.append(label);
+  }
+};
+
+function buildTextAndColor(number) {
+  const question = document.createElement('div');
+  const titleContainer = document.createElement('div');
+  const title = document.createElement('h3');
+  const textLabel = document.createElement('label');
+  const colorLabel = document.createElement('label');
+  const text = document.createElement('input');
+  const color = document.createElement('input');
+
+  title.innerHTML = `Pergunta ${number}`;
+  text.placeholder = 'Texto da pergunta';
+  color.placeholder = 'Cor do fundo da pergunta';
+
+  textLabel.append(text);
+  colorLabel.append(color);
+  titleContainer.append(title);
+  question.append(title);
+  question.append(textLabel);
+  question.append(colorLabel);
+  question.append(titleContainer);
+
+  return question;
+};
+
+function buildCorrectAnswer() {
+  const answer = document.createElement('div');
+  const titleContainer = document.createElement('div');
+  const title = document.createElement('h3');
+  const textLabel = document.createElement('label');
+  const urlLabel = document.createElement('label');
+  const text = document.createElement('input');
+  const url = document.createElement('input');
+
+  title.innerHTML = 'Resposta correta';
+  text.placeholder = 'Resposta correta';
+  url.placeholder = 'URL da imagem';
+
+  textLabel.append(text);
+  urlLabel.append(url);
+  titleContainer.append(title);
+  answer.append(title);
+  answer.append(textLabel);
+  answer.append(urlLabel);
+  answer.append(titleContainer);
+
+  return answer;
+};
+
+function buildIncorrectAnswer() {
+  const answers = [];
+  const answer = document.createElement('div');
+  const titleContainer = document.createElement('div');
+  const title = document.createElement('h3');
+  titleContainer.append(title);
+  answer.append(title);
+  answer.append(titleContainer);
+
+  title.innerHTML = 'Respostas incorretas';
+
+  for (let index = 0; index < 3; index += 1) {
+    const answerContainer = document.createElement('div');
+    const textLabel = document.createElement('label');
+    const urlLabel = document.createElement('label');
+    const text = document.createElement('input');
+    const url = document.createElement('input');
+
+    text.placeholder = `Resposta incorreta ${index + 1}`;
+    url.placeholder = `URL da imagem ${index + 1}`;
+
+    textLabel.append(text);
+    urlLabel.append(url);
+
+    answerContainer.append(textLabel);
+    answerContainer.append(urlLabel);
+
+    answerContainer.append(answer);
+
+    answers.push(answerContainer);
+  }
+
+  return [title, ...answers];
+};
+
+function expandForm({ target }) {
+  const questionContainer = target.parentElement;
+  const numberText = questionContainer.firstElementChild.innerHTML;
+  const number = numberText[numberText.length - 1];
+
+  const expandedQuestionContainer = document.createElement('div');
+  const incorrectContainer = document.createElement('div');
+  expandedQuestionContainer.classList.add('expandedQuestionContainer');
+
+  const question = buildTextAndColor(number);
+  const correctAnswer = buildCorrectAnswer();
+  const incorrectAnswers = buildIncorrectAnswer(number);
+
+  expandedQuestionContainer.append(question);
+  expandedQuestionContainer.append(correctAnswer);
+  expandedQuestionContainer.append(incorrectContainer);
+  incorrectAnswers.map((answer) => incorrectContainer.append(answer));
+
+  questionContainer.replaceWith(expandedQuestionContainer);
+};
+
+function buildQuestionsForm(parent) {
+  const { questions, initial } = quiz;
+  const questionsLength = initial[2].value;
+
+  for (let index = 0; index < questionsLength; index += 1) {
+    const hiddedQuestion = document.createElement('div');
+    const text = document.createElement('h3');
+    const icon = document.createElement('img');
+
+    hiddedQuestion.classList.add('hiddedQuestion');
+    icon.classList.add('hiddedQuestionIcon');
+
+    icon.src = '../assets/vetorEditar.svg';
+
+    icon.addEventListener('click', expandForm);
+
+    text.innerHTML = `Pergunta ${index + 1}`;
+
+    hiddedQuestion.append(text);
+    hiddedQuestion.append(icon);
+    parent.append(hiddedQuestion);
+  }
+};
+
 function formBuilder(parent, type) {
   if (type === 'initial') {
-    for (let index = 0; index < 4; index += 1) {
-      const label = document.createElement('label');
-      const input = document.createElement('input');
-
-      input.addEventListener('change', validateInitialQuizzInfo)
-
-      input.placeholder = quiz.initial[index].placeholder;
-      input.name = quiz.initial[index].name;
-      input.type = quiz.initial[index].type;
-      if (input.type === 'number') input.min = quiz.initial[index].min;
-      if (input.name === 'title') {
-        input.setAttribute('minlength', quiz.initial[index].minlength);
-        input.setAttribute('maxlength', quiz.initial[index].maxlength);
-      };
-
-      label.append(input);
-      parent.append(label);
-    }
+    buildInitialForm(parent);
   } else if (type === 'questions') {
-
+    buildQuestionsForm(parent);
   }
 };
 
