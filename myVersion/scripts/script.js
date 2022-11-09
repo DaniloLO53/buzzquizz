@@ -2,6 +2,7 @@ const main = document.querySelector('main');
 const allQuizzesContainer = document.querySelector('.allQuizzesContainer');
 const myQuizzes = document.querySelector('.myQuizzes');
 let initialQuizzValid = false;
+let questionTextAndColorValid = false;
 
 const quiz = {
   initial: [
@@ -210,6 +211,44 @@ function buildInitialForm(parent) {
   }
 };
 
+function validateQuestionText({ target }) {
+  const placeholder = target.placeholder;
+  const textOrColor = placeholder === 'Texto da pergunta' ? 'text' : 'color';
+  const numberText = textOrColor === 'text' ? target.parentElement.previousElementSibling.innerHTML : target.parentElement.previousElementSibling.previousElementSibling.innerHTML;
+
+  const number = Number(numberText[numberText.length - 1]);
+
+  quiz.questions[number - 1][(textOrColor === 'text' ? 'title' : 'color')] = target.value;
+
+  const invalidTitle = document.createElement('p');
+  const invalidColor = document.createElement('p');
+  invalidTitle.innerHTML = 'Mínimo: 20 caracteres';
+  invalidColor.innerHTML = 'Insira uma cor hexadecimal';
+
+  invalidTitle.classList.add('invalidText');
+  invalidTitle.classList.add('invalidTitle');
+  invalidColor.classList.add('invalidText');
+  invalidColor.classList.add('invalidColor');
+
+  const titleValid = quiz.questions[number - 1].title.length >= 20;
+  if (!titleValid && placeholder === 'Texto da pergunta') {
+    document.querySelector('.invalidTitle')?.remove();
+    target.after(invalidTitle);
+  } else if (placeholder === 'Texto da pergunta') {
+    document.querySelector('.invalidTitle')?.remove();
+  }
+
+  const colorValid = /^#([0-9A-F]{3}){1,2}$/i.test(quiz.questions[number - 1].color);
+  if (!colorValid && placeholder === 'Cor do fundo da pergunta') {
+    document.querySelector('.invalidColor')?.remove();
+    target.after(invalidColor);
+  } else if (placeholder === 'Cor do fundo da pergunta') {
+    document.querySelector('.invalidColor')?.remove();
+  }
+
+  questionTextAndColorValid = titleValid && colorValid;
+};
+
 function buildTextAndColor(number) {
   const question = document.createElement('div');
   const titleContainer = document.createElement('div');
@@ -222,6 +261,9 @@ function buildTextAndColor(number) {
   title.innerHTML = `Pergunta ${number}`;
   text.placeholder = 'Texto da pergunta';
   color.placeholder = 'Cor do fundo da pergunta';
+
+  text.addEventListener('change', validateQuestionText);
+  color.addEventListener('change', validateQuestionText);
 
   textLabel.append(text);
   colorLabel.append(color);
@@ -335,6 +377,33 @@ function buildQuestionsForm(parent) {
     hiddedQuestion.append(text);
     hiddedQuestion.append(icon);
     parent.append(hiddedQuestion);
+
+    quiz.questions = [
+      ...quiz.questions,
+      {
+        title: '',
+        color: '',
+        incorrects: [
+          {
+            answer: '',
+            url: '',
+          },
+          {
+            answer: '',
+            url: '',
+          },
+          {
+            answer: '',
+            url: '',
+          },
+        ],
+        correct: {
+          answer: '',
+          url: '',
+        }
+      }
+    ];
+    console.log(quiz);
   }
 };
 
@@ -365,12 +434,9 @@ function validateInitialQuizzInfo(event) {
 
   const titleValid = initial[0].value?.length >= 20 && initial[0]?.value?.length <= 65;
   if (!titleValid && event.target.name === 'title') {
-    console.log(document.querySelector('.invalidText'));
     document.querySelector('.invalidTitle')?.remove();
     event.target.after(invalidTitle);
-  } else if (event.target.name === 'title') {
-    document.querySelector('.invalidTitle')?.remove();
-  }
+  } else if (event.target.name === 'title') document.querySelector('.invalidTitle')?.remove();
 
   const urlValid = /((?:(?:http?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi.test(initial[1].value);
   if (!urlValid && event.target.name === 'url') {
