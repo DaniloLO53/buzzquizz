@@ -246,7 +246,8 @@ function validateQuestionText({ target }) {
     document.querySelector(`.invalidColor${number}`)?.remove();
   }
 
-  questionTextAndColorValid = titleValid && colorValid;
+  const valid = titleValid && colorValid;
+  quiz.questions[number - 1].valid = valid;
 };
 
 function buildTextAndColor(number) {
@@ -289,6 +290,9 @@ function buildCorrectAnswer() {
   text.placeholder = 'Resposta correta';
   url.placeholder = 'URL da imagem';
 
+  text.addEventListener('change', validateCorrectAnswer);
+  url.addEventListener('change', validateCorrectAnswer);
+
   textLabel.append(text);
   urlLabel.append(url);
   titleContainer.append(title);
@@ -299,6 +303,7 @@ function buildCorrectAnswer() {
 
   return answer;
 };
+
 
 function buildIncorrectAnswer() {
   const answers = [];
@@ -356,8 +361,24 @@ function expandForm({ target }) {
   expandedQuestionContainer.append(incorrectContainer);
   incorrectAnswers.map((answer) => incorrectContainer.append(answer));
 
+  Array.from(expandedQuestionContainer.children).forEach((input) => input.addEventListener('change', validateAllQuestions))
+
   questionContainer.replaceWith(expandedQuestionContainer);
 };
+
+function validateAllQuestions() {
+  const { questions } = quiz;
+  const valid = questions.every(({ valid, correct, incorrects }) => (
+    valid === true && correct.valid === true && incorrects.valid === true
+  ));
+  const button = document.querySelector('.startQuizzContainerButton');
+  if (valid) {
+    button.removeAttribute('disabled');
+  } else {
+    button.setAttribute('disabled', true);
+  }
+  console.log(valid);
+}
 
 function buildQuestionsForm(parent) {
   const { questions, initial } = quiz;
@@ -386,6 +407,7 @@ function buildQuestionsForm(parent) {
       {
         title: '',
         color: '',
+        initialValid: false,
         incorrects: [
           {
             answer: '',
@@ -428,11 +450,12 @@ function validateAnswer({ target }) {
   const numberText = (textOrURL === 'textIncorrect' || textOrURL === 'url') ? placeholder[placeholder.length - 1] : '';
 
   const number = numberText !== '' ? Number(numberText[numberText.length - 1]) : null;
+  console.log(target.parentElement.parentElement);
 
   const questionNumber = target.parentElement.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.innerHTML;
   const realNumber = Number(questionNumber[questionNumber.length - 1]);
   if (textOrURL === 'textIncorrect' || textOrURL === 'url') {
-    quiz.questions[realNumber].incorrects[number - 1][(textOrURL === 'textIncorrect' ? 'answer' : 'url')] = target.value;
+    quiz.questions[realNumber - 1].incorrects[number - 1][(textOrURL === 'textIncorrect' ? 'answer' : 'url')] = target.value;
   }
 
   const concatenatedNumbers = String(number) + String(realNumber);
@@ -447,7 +470,7 @@ function validateAnswer({ target }) {
   invalidUrl.classList.add('invalidText');
   invalidUrl.classList.add(`invalidUrl${concatenatedNumbers}`);
 
-  const titleValid = quiz.questions[realNumber].incorrects[number - 1].answer?.length > 0;
+  const titleValid = quiz.questions[realNumber - 1].incorrects[number - 1].answer?.length > 0;
   if (!titleValid && textOrURL === 'textIncorrect') {
 
     document.querySelector(`invalidTitle${concatenatedNumbers}`)?.remove();
@@ -459,7 +482,7 @@ function validateAnswer({ target }) {
 
   }
 
-  const urlValid = /((?:(?:http?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi.test(quiz.questions[realNumber].incorrects[number - 1].url);
+  const urlValid = /((?:(?:http?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi.test(quiz.questions[realNumber - 1].incorrects[number - 1].url);
   if (!urlValid && textOrURL === 'url') {
     document.querySelector(`.invalidUrl${concatenatedNumbers}`)?.remove();
     target.after(invalidUrl);
@@ -469,8 +492,64 @@ function validateAnswer({ target }) {
   }
 
 
-  initialQuizzValid = titleValid && urlValid;
+  const valid = titleValid && urlValid;
+  quiz.questions[realNumber - 1].incorrects[number - 1].valid = valid;
 
+  quiz.questions[realNumber - 1].incorrects.valid = quiz.questions[realNumber - 1].incorrects.every(({ valid }) => valid === true);
+
+};
+
+function validateCorrectAnswer({ target }) {
+  console.log(quiz);
+  const placeholder = target.placeholder;
+  const textOrURL = placeholder.includes(' correta')
+    ? 'textCorrect'
+    : 'url'
+
+  const questionNumber = target.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.innerHTML;
+  console.log(target.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.innerHTML)
+  const realNumber = Number(questionNumber[questionNumber.length - 1]);
+
+  if (textOrURL === 'textCorrect' || textOrURL === 'url') {
+    console.log(realNumber)
+    console.log(quiz.questions[realNumber - 1].correct)
+    quiz.questions[realNumber - 1].correct[(textOrURL === 'textCorrect' ? 'answer' : 'url')] = target.value;
+  }
+
+  const invalidTitle = document.createElement('p');
+  const invalidUrl = document.createElement('p');
+  invalidTitle.innerHTML = 'Escreva algo';
+  invalidUrl.innerHTML = 'Insira uma URL válida';
+
+  invalidTitle.classList.add('invalidText');
+  invalidTitle.classList.add(`invalidTitle${realNumber}`);
+  invalidUrl.classList.add('invalidText');
+  invalidUrl.classList.add(`invalidUrl${realNumber}`);
+
+  const titleValid = quiz.questions[realNumber - 1].correct.answer?.length > 0;
+  if (!titleValid && textOrURL === 'textCorrect') {
+
+    document.querySelector(`invalidTitle${realNumber}`)?.remove();
+    target.after(invalidTitle);
+
+
+  } else if (textOrURL === 'textCorrect') {
+    document.querySelector(`.invalidTitle${realNumber}`)?.remove();
+
+  }
+
+  const urlValid = /((?:(?:http?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi.test(quiz.questions[realNumber - 1].correct.url);
+  if (!urlValid && textOrURL === 'url') {
+    document.querySelector(`.invalidUrl${realNumber}`)?.remove();
+    target.after(invalidUrl);
+  } else if (textOrURL === 'url') {
+    document.querySelector(`.invalidUrl${realNumber}`)?.remove();
+
+  }
+
+
+  const valid = titleValid && urlValid;
+  quiz.questions[realNumber - 1].correct.valid = valid;
 };
 
 function validateInitialQuizzInfo(event) {
@@ -507,7 +586,8 @@ function validateInitialQuizzInfo(event) {
   const levelsValid = initial[3].value >= 2;
 
   initialQuizzValid = titleValid && urlValid && questionsValid && levelsValid;
-  if (initialQuizzValid) {
+  quiz.initial.initialValid = initialQuizzValid;
+  if (quiz.initial.initialValid) {
     button.removeAttribute('disabled');
   } else {
     button.setAttribute('disabled', true);
