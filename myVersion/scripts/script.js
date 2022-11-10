@@ -321,6 +321,9 @@ function buildIncorrectAnswer() {
     text.placeholder = `Resposta incorreta ${index + 1}`;
     url.placeholder = `URL da imagem ${index + 1}`;
 
+    text.addEventListener('change', validateAnswer);
+    url.addEventListener('change', validateAnswer);
+
     textLabel.append(text);
     urlLabel.append(url);
 
@@ -403,7 +406,7 @@ function buildQuestionsForm(parent) {
         }
       }
     ];
-    console.log(quiz);
+    // console.log(quiz);
   }
 };
 
@@ -413,6 +416,58 @@ function formBuilder(parent, type) {
   } else if (type === 'questions') {
     buildQuestionsForm(parent);
   }
+};
+
+function validateAnswer({ target }) {
+  // console.log(quiz);
+
+  const placeholder = target.placeholder;
+  const textOrURL = placeholder.includes('incorreta')
+    ? 'textIncorrect'
+    : placeholder.includes(' correta')
+      ? 'textCorrect'
+      : 'url';
+  const numberText = (textOrURL === 'textIncorrect' || textOrURL === 'url') ? placeholder[placeholder.length - 1] : '';
+
+  const number = numberText !== '' ? Number(numberText[numberText.length - 1]) : null;
+
+  const questionNumber = target.parentElement.parentElement.parentElement.parentElement.firstElementChild.firstElementChild.innerHTML;
+  const realNumber = Number(questionNumber[questionNumber.length - 1]);
+  if (textOrURL === 'textIncorrect' || textOrURL === 'url') {
+    console.log(textOrURL)
+    console.log(quiz.questions[realNumber].incorrects, number)
+    quiz.questions[realNumber].incorrects[number - 1][(textOrURL === 'textIncorrect' ? 'answer' : 'url')] = target.value;
+  }
+
+  const invalidTitle = document.createElement('p');
+  const invalidUrl = document.createElement('p');
+  invalidTitle.innerHTML = 'Escreva algo';
+  invalidUrl.innerHTML = 'Insira uma URL válida';
+
+  invalidTitle.classList.add('invalidText');
+  invalidTitle.classList.add(`invalidTitle${realNumber}`);
+  invalidUrl.classList.add('invalidText');
+  invalidUrl.classList.add(`invalidUrl${realNumber}`);
+
+  const titleValid = quiz.questions[realNumber].incorrects[number - 1].answer?.length > 0;
+  if (!titleValid && textOrURL === 'textIncorrect') {
+    document.querySelector(`invalidTitle${realNumber}`)?.remove();
+    target.after(invalidTitle);
+  } else if (textOrURL === 'textIncorrect') document.querySelector(`invalidTitle${realNumber}`)?.remove();
+
+  const urlValid = /((?:(?:http?|ftp)[s]*:\/\/)?[a-z0-9-%\/\&=?\.]+\.[a-z]{2,4}\/?([^\s<>\#%"\,\{\}\\|\\\^\[\]`]+)?)/gi.test(quiz.questions[realNumber].incorrects[number - 1].url);
+  if (!urlValid && textOrURL === 'url') {
+    console.log(document.querySelector('.invalidText'));
+    document.querySelector(`invalidUrl${realNumber}`)?.remove();
+    target.after(invalidUrl);
+  } else if (textOrURL === 'url') {
+    document.querySelector(`invalidUrl${realNumber}`)?.remove();
+  }
+
+
+  initialQuizzValid = titleValid && urlValid;
+  console.log(quiz, titleValid, urlValid)
+
 };
 
 function validateInitialQuizzInfo(event) {
