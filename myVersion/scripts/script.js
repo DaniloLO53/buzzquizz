@@ -34,6 +34,7 @@ const quiz = {
   ],
 
   questions: [],
+  levels: [],
 }
 
 function reloadToInitialScreen() {
@@ -140,10 +141,16 @@ async function buildQuizzes() {
   quizzes.forEach((quiz) => allQuizzesContainer.append(quiz));
 };
 
+function renderLevelsCreator(event) {
+  const [form, button] = renderGeneralQuiz(event);
+  formBuilder(form, 'levels');
+
+};
+
 function renderQuestionsCreator(event) {
   const [form, button] = renderGeneralQuiz(event);
   formBuilder(form, 'questions');
-  // button.addEventListener('click', renderQuestionsCreator);
+  button.addEventListener('click', renderLevelsCreator);
 };
 
 function renderQuizCreator(event) {
@@ -250,6 +257,43 @@ function validateQuestionText({ target }) {
   quiz.questions[number - 1].valid = valid;
 };
 
+function buildLevel(number) {
+  const level = document.createElement('div');
+  const titleContainer = document.createElement('div');
+  const title = document.createElement('h3');
+  const textLabel = document.createElement('label');
+  const minCorrectsLabel = document.createElement('label');
+  const urlLabel = document.createElement('label');
+  const descriptionLabel = document.createElement('label');
+  const text = document.createElement('input');
+  const minCorrect = document.createElement('input');
+  const url = document.createElement('input');
+  const description = document.createElement('input');
+
+  title.innerHTML = `Nível ${number}`;
+  text.placeholder = 'Texto do nível';
+  minCorrect.placeholder = '% de acerto mínima';
+  url.placeholder = 'URL da imagem do nível';
+  description.placeholder = 'Descrição do nível';
+
+  // text.addEventListener('change', validateQuestionText);
+  // color.addEventListener('change', validateQuestionText);
+
+  textLabel.append(text);
+  minCorrectsLabel.append(minCorrect);
+  urlLabel.append(url);
+  descriptionLabel.append(description);
+  titleContainer.append(title);
+  level.append(title);
+  level.append(textLabel);
+  level.append(minCorrectsLabel);
+  level.append(urlLabel);
+  level.append(descriptionLabel);
+  level.append(titleContainer);
+
+  return level;
+};
+
 function buildTextAndColor(number) {
   const question = document.createElement('div');
   const titleContainer = document.createElement('div');
@@ -343,6 +387,23 @@ function buildIncorrectAnswer() {
   return [title, ...answers];
 };
 
+function expandFormLevel({ target }) {
+  const questionContainer = target.parentElement;
+  const numberText = questionContainer.firstElementChild.innerHTML;
+  const number = numberText[numberText.length - 1];
+
+  const expandedQuestionContainer = document.createElement('div');
+  expandedQuestionContainer.classList.add('expandedQuestionContainer');
+
+  const level = buildLevel(number);
+
+  expandedQuestionContainer.append(level);
+
+  // Array.from(expandedQuestionContainer.children).forEach((input) => input.addEventListener('change', validateAllQuestions))
+
+  questionContainer.replaceWith(expandedQuestionContainer);
+};
+
 function expandForm({ target }) {
   const questionContainer = target.parentElement;
   const numberText = questionContainer.firstElementChild.innerHTML;
@@ -383,6 +444,7 @@ function validateAllQuestions() {
 function buildQuestionsForm(parent) {
   const { questions, initial } = quiz;
   const questionsLength = initial[2].value;
+  console.log(initial);
 
   for (let index = 0; index < questionsLength; index += 1) {
     const hiddedQuestion = document.createElement('div');
@@ -431,11 +493,47 @@ function buildQuestionsForm(parent) {
   }
 };
 
+function buildLevelsForm(parent) {
+  const { questions, initial } = quiz;
+  const levelsLength = initial[3].value;
+
+  for (let index = 0; index < levelsLength; index += 1) {
+    const hiddedQuestion = document.createElement('div');
+    const text = document.createElement('h3');
+    const icon = document.createElement('img');
+
+    hiddedQuestion.classList.add('hiddedQuestion');
+    icon.classList.add('hiddedQuestionIcon');
+
+    icon.src = '../assets/vetorEditar.svg';
+
+    icon.addEventListener('click', expandFormLevel);
+
+    text.innerHTML = `Level ${index + 1}`;
+
+    hiddedQuestion.append(text);
+    hiddedQuestion.append(icon);
+    parent.append(hiddedQuestion);
+
+    quiz.levels = [
+      ...quiz.levels,
+      {
+        title: '',
+        minCorrect: '',
+        url: '',
+        description: '',
+      },
+    ];
+  }
+};
+
 function formBuilder(parent, type) {
   if (type === 'initial') {
     buildInitialForm(parent);
   } else if (type === 'questions') {
     buildQuestionsForm(parent);
+  } else if (type === 'levels') {
+    buildLevelsForm(parent);
   }
 };
 
